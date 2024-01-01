@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "sams-webhook-testing"
+version = "0.1.0"
+description = ""
+authors = ["sakthi <sakthiratnam050@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.108.0"
+uvicorn = "^0.25.0"
+httpx = "^0.26.0"
+pyngrok = "^7.0.5"
+poethepoet = "^0.24.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poe.tasks]
+run-server = 'uvicorn main:app --host 0.0.0.0 --port 8000 --reload'
+open-ngrok-tunnel = 'python open_tunnel.py'
