@@ -2,7 +2,7 @@ from pyngrok import ngrok
 
 def open_ngrok_tunnel():
     # Open a ngrok tunnel
-    public_url = ngrok.connect(8000)  # Assumes FastAPI server is running on port 8000
+    public_url = ngrok.connect(9000)  # Assumes FastAPI server is running on port 8000
     print("ngrok tunnel is live at:", public_url)
     return public_url
 
@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
         # Start FastAPI server using uvicorn
         import uvicorn
-        uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+        uvicorn.run("main:app", host="0.0.0.0", port=9000, reload=True)
 
     finally:
         # Close ngrok tunnel when the FastAPI server is stopped
