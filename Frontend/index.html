@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Frontend</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        #loader {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        #dataForm {
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 1px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+
+        input[type="checkbox"] {
+            width: auto;
+            margin-bottom: 16px;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #iframeContainer {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <form id="dataForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="date_of_birth">Date of Birth:</label>
+        <input type="text" id="date_of_birth" name="date_of_birth" required>
+
+        <label for="aliases">Aliases:</label>
+        <input type="text" id="aliases" name="aliases">
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email">
+
+        <label for="nationality">Nationality:</label>
+        <input type="text" id="nationality" name="nationality">
+
+        <label for="national_id">National ID:</label>
+        <input type="text" id="national_id" name="national_id">
+
+        <label for="voter_id">Voter ID:</label>
+        <input type="text" id="voter_id" name="voter_id">
+
+        <label for="passport_number">Passport Number:</label>
+        <input type="text" id="passport_number" name="passport_number">
+
+        <label for="pan">PAN:</label>
+        <input type="text" id="pan" name="pan">
+
+        <label for="phone_number">Phone Number:</label>
+        <input type="text" id="phone_number" name="phone_number">
+
+        <label for="sanction_field">Sanction Field:</label>
+        <input type="checkbox" id="sanction_field" name="sanction_field" checked>
+
+        <label for="pep_field">PEP Field:</label>
+        <input type="checkbox" id="pep_field" name="pep_field" checked>
+
+        <label for="ams_field">AMS Field:</label>
+        <input type="checkbox" id="ams_field" name="ams_field" checked>
+
+        <label for="target_date">Target Date:</label>
+        <input type="text" id="target_date" name="target_date" required>
+
+        <button onclick="callApi()" type="button" id="sendButton">Send Data</button>
+    </form>
+
+    <div id="loader">Loading...</div>
+    <div id="iframeContainer"></div>
+
+    <script>
+        let socket;
+
+        function callApi() {
+            const formData = new FormData(document.getElementById("dataForm"));
+            const data = {
+                screen_type: 'initial',
+                applicant_id: 'uhi4hi-3safdsa3-asdfj',
+                search_type: 'individual',
+                date_of_birth: '1964-07-26',
+                aliases: '',
+                email: '',
+                nationality: '',
+                national_id: '',
+                voter_id: '',
+                passport_number: '',
+                pan: '',
+                phone_number: '',
+                sanction_field: true,
+                pep_field: true,
+                ams_field: false,
+                target_date: '2023-04-21',
+                application_id: 'uhi4hi-3safdsa3-asdfj',
+                sfdc_lead_id: 'uhi4hi-3safdsa3-asdfj',
+                branch_name: 'bangalore',
+                product_line: '123',
+                pennant_analyst_name: 'manager_sams',
+                analyst_email_id: 'sams@solytics-partners.com',
+                webhook: true
+            };
+            formData.forEach((value, key) => {
+                data[key] = value || data[key]; // Use default value if input is empty
+            });
+
+            // Show loader while the WebSocket connection is in progress
+            const loader = document.getElementById("loader");
+            loader.style.display = "block";
+
+            // Call the external API with API key in header authorization
+            var apiUrl = "https://ixg9jsfpl0.execute-api.ap-south-1.amazonaws.com/qa/async-search-initiate/"; // Replace with the actual API URL
+
+            try {
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Api-Key 5LcugpTx.hFr8WbXIBeUiMa1QLnEIR4MkUDWCeZDQ'
+                    },
+                    body: JSON.stringify(data)
+                }).then(response=>{
+                    if (!response.ok) {
+                        throw new Error(`API request failed with status ${response.status}`);
+                    }
+
+                    console.log("API request successful:", response);
+
+                    // Open WebSocket connection when the API call is successful
+                    socket = new WebSocket("ws://localhost:9000/ws");
+
+                    socket.addEventListener("open", (event) => {
+                        console.log("WebSocket connection opened:", event);
+
+                        // Hide loader when WebSocket connection is established
+                        loader.style.display = "none";
+                    });
+                    socket.addEventListener("message", (event) => {
+                        const payload = JSON.parse(event.data);
+
+                        if (payload && payload.data) {
+                            // Assume payload.data contains the HTML content
+                            const htmlData = payload.data;
+
+                            // Create a modal or use a div to display the content
+                            const modalContainer = document.getElementById("iframeContainer");
+                            modalContainer.innerHTML = ""; // Clear existing content
+
+                            // Create an <iframe> element
+                            const iframe = document.createElement("iframe");
+                            iframe.srcdoc = htmlData;
+                            iframe.style.width = "100%";
+                            iframe.style.height = "80vh";
+
+                            // Append the <iframe> to the modal container
+                            modalContainer.appendChild(iframe);
+
+                            // Display the modal or show the div
+                            modalContainer.style.display = "block";
+                            socket.close();
+                        }
+
+                        console.log("Received payload from server:", payload);
+                        });
+
+                    // socket.addEventListener("close", (event) => {
+                    //     console.log("WebSocket connection closed:", event);
+                    // });
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                });
+
+                
+
+                
+            } catch (error) {
+                console.error("Error during API request:", error);
+
+                // Hide loader in case of API request failure
+                loader.style.display = "none";
+            }
+        };
+    </script>
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const socketUrl = 'ws://localhost:9000/ws'; // Replace with the actual WebSocket URL
+            const apiUrl = 'https://ixg9jsfpl0.execute-api.ap-south-1.amazonaws.com/qa/async-search-initiate/'; // Replace with the actual API URL
+            const apiKey = '5LcugpTx.hFr8WbXIBeUiMa1QLnEIR4MkUDWCeZDQ'; // Replace with your actual API key
+    
+            const dataForm = document.getElementById('dataForm');
+            const loader = document.getElementById('loader');
+    
+            function showLoader() {
+                loader.style.display = 'block';
+            }
+    
+            function hideLoader() {
+                loader.style.display = 'none';
+            }
+    
+            function openWebSocketConnection() {
+                socket = new WebSocket(socketUrl);
+    
+                socket.addEventListener('open', (event) => {
+                    console.log('WebSocket connection opened:', event);
+                    hideLoader();
+                });
+    
+                socket.addEventListener('message', (event) => {
+                    const payload = JSON.parse(event.data);
+    
+                    if (payload && payload.data) {
+                        const htmlData = payload.data;
+    
+                        const iframe = document.createElement('iframe');
+                        iframe.srcdoc = htmlData;
+                        iframe.style.width = '100%';
+                        iframe.style.height = '80vh';
+    
+                        const popupWindow = window.open('', 'Popup Window', 'width=800, height=600');
+                        popupWindow.document.body.innerHTML = '';
+                        popupWindow.document.body.appendChild(iframe);
+                    }
+    
+                    console.log('Received payload from server:', payload);
+                });
+    
+                socket.addEventListener('close', (event) => {
+                    console.log('WebSocket connection closed:', event);
+                });
+            }
+    
+            function callApi() {
+                const formData = new FormData(dataForm);
+                const data = {
+                    screen_type: 'initial',
+                    applicant_id: 'uhi4hi-3safdsa3-asdfj',
+                    // Add other data properties as needed
+                };
+                const headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Api-Key ${apiKey}`
+                    };
+    
+                formData.forEach((value, key) => {
+                    data[key] = value;
+                });
+                console.log(data)
+    
+                showLoader();
+    
+                fetch('https://ixg9jsfpl0.execute-api.ap-south-1.amazonaws.com/qa/get-search/initial/' , {
+                    headers: headers
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`API request failed with status ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(jsonData => {
+                    console.log('API response:', jsonData);
+                    openWebSocketConnection();
+                })
+                .catch(error => {
+                    console.error('Error during API request:', error);
+                    hideLoader();
+                });
+            }
+    
+            // Attach click event to the button
+            const sendButton = document.getElementById('sendButton');
+            sendButton.addEventListener('click', callApi);
+        });
+    </script> -->
+    
+</body>
+</html>
