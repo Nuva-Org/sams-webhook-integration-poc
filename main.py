@@ -38,8 +38,8 @@ async def send_payload_to_frontend(payload: dict):
     for websocket in websockets:
         try:
             await websocket.send_text(payload_json)
-        except WebSocketException:
-            print("exception occured")
+        except Exception as e:
+            print("exception occured: ",e)
         
 
 @app.post("/")

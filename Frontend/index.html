@@ -122,6 +122,7 @@
 
         function callApi() {
             const formData = new FormData(document.getElementById("dataForm"));
+            // change the pyaload as per your requirement
             const data = {
                 screen_type: 'initial',
                 applicant_id: 'uhi4hi-3safdsa3-asdfj',
@@ -136,8 +137,8 @@
                 pan: '',
                 phone_number: '',
                 sanction_field: true,
-                pep_field: true,
-                ams_field: false,
+                pep_field: false,
+                ams_field: true,
                 target_date: '2023-04-21',
                 application_id: 'uhi4hi-3safdsa3-asdfj',
                 sfdc_lead_id: 'uhi4hi-3safdsa3-asdfj',
@@ -145,25 +146,24 @@
                 product_line: '123',
                 pennant_analyst_name: 'manager_sams',
                 analyst_email_id: 'sams@solytics-partners.com',
-                webhook: true
+                webhook: true,
+                // timeout: 2 // Optional timeout in seconds
             };
             formData.forEach((value, key) => {
-                data[key] = value || data[key]; // Use default value if input is empty
+                data[key] = value || data[key]; 
             });
 
-            // Show loader while the WebSocket connection is in progress
             const loader = document.getElementById("loader");
             loader.style.display = "block";
 
-            // Call the external API with API key in header authorization
-            var apiUrl = "https://ixg9jsfpl0.execute-api.ap-south-1.amazonaws.com/qa/async-search-initiate/"; // Replace with the actual API URL
+            var apiUrl = "https://vcqxgn0jvc.execute-api.ap-south-1.amazonaws.com/preprod/async-search-initiate/";
 
             try {
                 fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Api-Key 5LcugpTx.hFr8WbXIBeUiMa1QLnEIR4MkUDWCeZDQ'
+                        'Authorization': 'Api-Key SAMS-API-KEY'
                     },
                     body: JSON.stringify(data)
                 }).then(response=>{
@@ -184,28 +184,35 @@
                     });
                     socket.addEventListener("message", (event) => {
                         const payload = JSON.parse(event.data);
+                        const modalContainer = document.getElementById("iframeContainer");
+                        modalContainer.innerHTML = ""; // Clear existing content
 
-                        if (payload && payload.data) {
-                            // Assume payload.data contains the HTML content
-                            const htmlData = payload.data;
+                        // Create an <iframe> element
+                        const iframe = document.createElement("iframe");
+                        var htmlData = "";
 
-                            // Create a modal or use a div to display the content
-                            const modalContainer = document.getElementById("iframeContainer");
-                            modalContainer.innerHTML = ""; // Clear existing content
-
-                            // Create an <iframe> element
-                            const iframe = document.createElement("iframe");
-                            iframe.srcdoc = htmlData;
-                            iframe.style.width = "100%";
-                            iframe.style.height = "80vh";
-
-                            // Append the <iframe> to the modal container
-                            modalContainer.appendChild(iframe);
-
-                            // Display the modal or show the div
-                            modalContainer.style.display = "block";
-                            socket.close();
+                        if (payload && payload.data && payload.status == "success") {
+                            htmlData = payload.data;
+                            console.log("API request success");
+                        
+                        } else if (payload.status == "timeout") {
+                            htmlData = "<h1>Request got timed out, search is in progress!<h1>"
+                            // Handle timeout error
+                            console.log("API request timed out:", payload);
+                        } else {
+                            htmlData = "<h1>Server failed to process the request!<h1>"
+                            // Handle other errors
+                            console.log("API request failed:", payload);
                         }
+                        socket.close();
+                        iframe.srcdoc = htmlData;
+                        iframe.style.width = "100%";
+                        iframe.style.height = "80vh";
+
+                        // Append the <iframe> to the modal container
+                        modalContainer.appendChild(iframe);
+                        modalContainer.style.display = "block";
+                        
 
                         console.log("Received payload from server:", payload);
                         });
@@ -229,98 +236,5 @@
             }
         };
     </script>
-    <!-- <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const socketUrl = 'ws://localhost:9000/ws'; // Replace with the actual WebSocket URL
-            const apiUrl = 'https://ixg9jsfpl0.execute-api.ap-south-1.amazonaws.com/qa/async-search-initiate/'; // Replace with the actual API URL
-            const apiKey = '5LcugpTx.hFr8WbXIBeUiMa1QLnEIR4MkUDWCeZDQ'; // Replace with your actual API key
-    
-            const dataForm = document.getElementById('dataForm');
-            const loader = document.getElementById('loader');
-    
-            function showLoader() {
-                loader.style.display = 'block';
-            }
-    
-            function hideLoader() {
-                loader.style.display = 'none';
-            }
-    
-            function openWebSocketConnection() {
-                socket = new WebSocket(socketUrl);
-    
-                socket.addEventListener('open', (event) => {
-                    console.log('WebSocket connection opened:', event);
-                    hideLoader();
-                });
-    
-                socket.addEventListener('message', (event) => {
-                    const payload = JSON.parse(event.data);
-    
-                    if (payload && payload.data) {
-                        const htmlData = payload.data;
-    
-                        const iframe = document.createElement('iframe');
-                        iframe.srcdoc = htmlData;
-                        iframe.style.width = '100%';
-                        iframe.style.height = '80vh';
-    
-                        const popupWindow = window.open('', 'Popup Window', 'width=800, height=600');
-                        popupWindow.document.body.innerHTML = '';
-                        popupWindow.document.body.appendChild(iframe);
-                    }
-    
-                    console.log('Received payload from server:', payload);
-                });
-    
-                socket.addEventListener('close', (event) => {
-                    console.log('WebSocket connection closed:', event);
-                });
-            }
-    
-            function callApi() {
-                const formData = new FormData(dataForm);
-                const data = {
-                    screen_type: 'initial',
-                    applicant_id: 'uhi4hi-3safdsa3-asdfj',
-                    // Add other data properties as needed
-                };
-                const headers = {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Api-Key ${apiKey}`
-                    };
-    
-                formData.forEach((value, key) => {
-                    data[key] = value;
-                });
-                console.log(data)
-    
-                showLoader();
-    
-                fetch('https://ixg9jsfpl0.execute-api.ap-south-1.amazonaws.com/qa/get-search/initial/' , {
-                    headers: headers
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`API request failed with status ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(jsonData => {
-                    console.log('API response:', jsonData);
-                    openWebSocketConnection();
-                })
-                .catch(error => {
-                    console.error('Error during API request:', error);
-                    hideLoader();
-                });
-            }
-    
-            // Attach click event to the button
-            const sendButton = document.getElementById('sendButton');
-            sendButton.addEventListener('click', callApi);
-        });
-    </script> -->
-    
 </body>
 </html>
