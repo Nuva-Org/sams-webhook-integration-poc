@@ -4,25 +4,29 @@
 
 1. Clone the repository:
     ```
-    git clone 
+    git clone https://github.com/Nuva-Org/sams-webhook-integration-poc.git
     ```
 
 2. Navigate into the cloned repository:
     ```
-    cd
+    cd sams-webhook-integration-poc.git
     ```
-
-3. Install dependencies:
+3. Switch branch:
+    ```
+    git checkout poc-websocket
+    ```
+    
+4. Install dependencies:
     ```
     pip install poetry
     poetry install
     poetry shell
     ```
 
-4. Download and setup ngrok locally. Follow all the steps here at https://dashboard.ngrok.com/ after loging in.
+5. Download and setup ngrok locally. Follow all the steps here at https://dashboard.ngrok.com/ after loging in.
 
 
-5. Run the application:
+6. Run the application:
     ```
     poe open-ngrok-tunnel
     ```
