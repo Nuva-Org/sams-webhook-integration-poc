@@ -19,9 +19,12 @@
     poetry shell
     ```
 
-4. Run the application:
+4. Download and setup ngrok locally. Follow all the steps here at https://dashboard.ngrok.com/ after loging in.
+
+
+5. Run the application:
     ```
-    poe run-server
+    poe open-ngrok-tunnel
     ```
 
 To run the frontend just replace the API key with yours API key and open the ```Frontend/index.html``` in browser.
