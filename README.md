@@ -9,13 +9,12 @@
 
 2. Navigate into the cloned repository:
     ```
-    cd sams-webhook-integration-poc.git
+    cd sams-webhook-integration-poc
     ```
 3. Switch branch:
     ```
     git checkout poc-websocket
     ```
-    
 4. Install dependencies:
     ```
     pip install poetry
